@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerAI — AI-Powered Career Recommendation System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    /* ── Home-specific styles ─────────────────────────────────────────────── */
+    .hero { padding: 100px 0 80px; }
+
+    .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    /* Stats row */
+    .stats {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin: 64px 0;
+    }
+    .stat-item {
+      flex: 1; padding: 28px 24px; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-size: 2.4rem; font-weight: 800;
+      color: var(--accent); line-height: 1;
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text2); letter-spacing: 0.06em; }
+
+    /* Feature cards */
+    .features { margin-bottom: 80px; }
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover {
+      border-color: rgba(0,229,160,0.3);
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.88rem; color: var(--text2); }
+
+    /* How it works */
+    .steps { counter-reset: steps; margin-bottom: 80px; }
+    .step {
+      display: flex; gap: 24px; align-items: flex-start;
+      padding: 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .step:hover { border-color: var(--border2); }
+    .step-num {
+      counter-increment: steps;
+      min-width: 40px; height: 40px;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.25);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .step-content h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .step-content p  { font-size: 0.88rem; color: var(--text2); }
+
+    /* CTA section */
+    .cta-section {
+      text-align: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 60px 32px;
+      margin-bottom: 80px;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; top: -60px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(0,229,160,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+    .cta-section p  { color: var(--text2); margin-bottom: 32px; }
+  </style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<script>
+window.addEventListener("scroll", () => {
+  let scroll = document.documentElement.scrollTop;
+  let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById("scroll-bar").style.width = (scroll / height) * 100 + "%";
+});
+</script>
+<!-- ── Navigation ──────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">◈ CAREER_AI</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="questionnaire.html">Questionnaire</a>
+      <a href="resume.html">Resume</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────────────────── -->
+<div class="page-wrapper">
+  <section class="hero fade-up">
+    <div class="hero-tag">Final Year Project </div>
+    <h1>Discover Your<br><span>Ideal Tech Career</span></h1>
+    <p>
+      AI-powered career recommendations combining skill assessment,
+      resume analysis, gap detection, and personalised learning roadmaps.
+      Made with lots of ❤️️ - Aryan 
+    </p>
+    <div class="hero-cta">
+      <a href="questionnaire.html" class="btn btn-primary">
+        ⚡ Take Skill Assessment
+      </a>
+      <a href="resume.html" class="btn btn-secondary">
+        📄 Analyse My Resume
+      </a>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats fade-up-2">
+    <div class="stat-item">
+      <div class="stat-num">10+</div>
+      <div class="stat-label">Career Paths</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">13</div>
+      <div class="stat-label">Skill Dimensions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">RF</div>
+      <div class="stat-label">ML Algorithm</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">AI APIs</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features fade-up-3">
+    <div class="section-title">What This System Does</div>
+    <div class="section-sub">Four intelligent modules working together</div>
+    <div class="grid-2">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>ML Career Prediction</h3>
+        <p>Random Forest classifier trained on 13 skill dimensions. Rate yourself and get an instant career recommendation with confidence scores.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Resume Analyser</h3>
+        <p>Upload your PDF resume. We extract the text, detect all technical and soft skills mentioned, and give you a skills inventory.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Skill Gap Detection</h3>
+        <p>Compare your current skills against the industry requirements for any target career. See exactly what's missing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗺️</div>
+        <h3>Learning Roadmap</h3>
+        <p>Get a structured, phase-by-phase learning roadmap tailored to your target career, highlighting the gaps you need to fill first.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="steps fade-up-4">
+    <div class="section-title">How It Works</div>
+    <div class="section-sub">Four simple steps to your career recommendation</div>
+
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h4>Rate Your Skills</h4>
+        <p>Use the questionnaire to score yourself across 13 technical and soft skill areas on a scale of 1–10.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h4>AI Predicts Your Career</h4>
+        <p>A Random Forest ML model analyses your skill profile and returns the top 3 recommended careers with confidence percentages.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h4>Upload Your Resume (Optional)</h4>
+        <p>PDF text is extracted and scanned for 60+ skill keywords. Cross-reference your resume skills with your questionnaire answers.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h4>Get Your Roadmap</h4>
+        <p>See a detailed phase-by-phase learning plan for your predicted career, with your skill gaps highlighted as priority items.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to Find Your <span class="text-accent">Career Path?</span></h2>
+    <p>The assessment takes about 3 minutes. No account needed.</p>
+    <a href="questionnaire.html" class="btn btn-primary" style="font-size:15px; padding:16px 36px;">
+      Start Skill Assessment →
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>AI-Powered Career Recommendation System &nbsp;·&nbsp; Final Year Project &nbsp;·&nbsp; Built with Flask + Scikit-learn</p>
+</footer>
+
+</body>
+</html>

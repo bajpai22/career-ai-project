@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Results — CareerAI</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .results-header { padding: 60px 0 40px; text-align: center; }
+
+    /* Top prediction card */
+    .top-career-card {
+      background: var(--bg2);
+      border: 1px solid rgba(0,229,160,0.3);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      text-align: center;
+      position: relative; overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: var(--glow-lg);
+    }
+    .top-career-card::before {
+      content: '';
+      position: absolute; top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 400px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,229,160,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .top-career-label {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--text3); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    .top-career-name {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800; color: var(--accent);
+      letter-spacing: -0.02em; margin-bottom: 20px;
+    }
+    .confidence-ring {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: rgba(0,229,160,0.08);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 100px;
+      padding: 8px 20px;
+    }
+    .confidence-value {
+      font-family: var(--font-mono); font-size: 1.6rem;
+      font-weight: 700; color: var(--accent);
+    }
+    .confidence-label { font-size: 0.85rem; color: var(--text2); }
+
+    /* Top 3 alternatives */
+    .top3-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 640px) { .top3-grid { grid-template-columns: 1fr; } }
+
+    .alt-career-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .alt-career-card:hover { border-color: var(--border2); cursor: pointer; }
+    .alt-career-card.selected { border-color: rgba(0,184,217,0.5); box-shadow: 0 0 20px rgba(0,184,217,0.1); }
+    .alt-career-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+    .alt-career-prob { font-family: var(--font-mono); font-size: 1.3rem; color: var(--accent2); font-weight: 700; }
+    .alt-career-label { font-size: 0.75rem; color: var(--text3); }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      font-family: var(--font-mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 12px 20px; border: none; border-bottom: 2px solid transparent;
+      background: transparent; color: var(--text3); cursor: pointer;
+      transition: all 0.2s; margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Skill gap table */
+    .gap-table { width: 100%; border-collapse: collapse; }
+    .gap-table th {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text3); padding: 10px 16px; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .gap-table td { padding: 12px 16px; border-bottom: 1px solid rgba(30,33,48,0.5); font-size: 0.88rem; }
+    .gap-table tr:last-child td { border-bottom: none; }
+    .gap-bar-cell { width: 160px; }
+    .gap-bar-wrap { background: var(--border); border-radius: 100px; height: 6px; }
+    .gap-bar-fill { height: 100%; border-radius: 100px; }
+    .gap-bar-fill.present { background: var(--accent); }
+    .gap-bar-fill.missing { background: var(--danger); }
+
+    /* Match score */
+    .match-score-box {
+      display: flex; align-items: center; gap: 20px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px;
+    }
+    .match-score-num {
+      font-family: var(--font-mono); font-size: 2.5rem;
+      font-weight: 700; line-height: 1;
+    }
+    .match-score-meta h4 { font-size: 0.95rem; font-weight: 700; }
+    .match-score-meta p  { font-size: 0.8rem; color: var(--text2); }
+
+    /* Roadmap */
+    .phase-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px;
+      position: relative; padding-left: 56px;
+    }
+    .phase-card::before {
+      content: attr(data-phase);
+      position: absolute; left: 20px; top: 24px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--accent); font-weight: 700;
+    }
+    .phase-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .phase-duration { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 14px; }
+    .phase-topics { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+    .phase-topic {
+      font-size: 0.8rem; padding: 4px 12px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 100px; color: var(--text2);
+    }
+    .phase-topic.highlight {
+      background: rgba(0,229,160,0.08);
+      border-color: rgba(0,229,160,0.3);
+      color: var(--accent);
+    }
+
+    /* Skill radar chart */
+    .skill-chart-wrap {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px;
+    }
+    .skill-bars { display: grid; gap: 10px; }
+    .skill-bar-row { display: flex; align-items: center; gap: 12px; }
+    .skill-bar-name { font-size: 0.78rem; min-width: 140px; color: var(--text2); font-family: var(--font-mono); }
+    .skill-bar-outer { flex: 1; background: var(--border); border-radius: 100px; height: 8px; }
+    .skill-bar-inner { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.6s ease; }
+    .skill-bar-val { font-family: var(--font-mono); font-size: 11px; color: var(--text3); min-width: 20px; text-align: right; }
+
+    #no-data-msg { padding: 80px 0; text-align: center; }
+  </style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<script>
+window.addEventListener("scroll", () => {
+  let scroll = document.documentElement.scrollTop;
+  let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById("scroll-bar").style.width = (scroll / height) * 100 + "%";
+});
+</script>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">◈ CAREER_AI</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="questionnaire.html">Questionnaire</a>
+      <a href="resume.html">Resume</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+
+  <!-- No data fallback -->
+  <div id="no-data-msg" class="hidden">
+    <p class="text-muted">No prediction data found.</p>
+    <a href="questionnaire.html" class="btn btn-primary" style="margin-top:16px;">Take Assessment</a>
+  </div>
+
+  <!-- Main results -->
+  <div id="results-content">
+
+    <div class="results-header fade-up">
+      <div class="hero-tag">AI Prediction Complete</div>
+      <h1 class="section-title">Your Career Recommendation</h1>
+    </div>
+
+    <!-- Top prediction -->
+    <div class="top-career-card fade-up-2">
+      <p class="top-career-label">Best Career Match for You</p>
+      <h2 class="top-career-name" id="top-career-name">—</h2>
+      <div class="confidence-ring">
+        <span class="confidence-value" id="confidence-val">—</span>
+        <span class="confidence-label">Confidence Score</span>
+      </div>
+    </div>
+
+    <!-- Top 3 alternates -->
+    <div class="top3-grid fade-up-3" id="top3-grid"></div>
+
+    <!-- Tabs: Skill Profile / Skill Gap / Roadmap -->
+    <div class="fade-up-4">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('skills')">Skill Profile</button>
+        <button class="tab-btn" onclick="showTab('gap')">Skill Gap</button>
+        <button class="tab-btn" onclick="showTab('roadmap')">Learning Roadmap</button>
+      </div>
+
+      <!-- Tab: Skill Profile -->
+      <div class="tab-panel active" id="tab-skills">
+        <div class="skill-chart-wrap">
+          <p class="text-muted mb-16" style="font-size:0.85rem;">Your self-assessed skill ratings across all 13 dimensions.</p>
+          <div class="skill-bars" id="skill-bars"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Skill Gap -->
+      <div class="tab-panel" id="tab-gap">
+        <div id="gap-loading" style="text-align:center; padding:40px; color:var(--text2);">
+          <div class="spinner"></div>
+          <p style="margin-top:12px; font-family:var(--font-mono); font-size:12px;">Loading gap analysis…</p>
+        </div>
+        <div id="gap-content" class="hidden">
+          <div class="match-score-box">
+            <div class="match-score-num" id="match-score-num">—</div>
+            <div class="match-score-meta">
+              <h4>Current Match Score</h4>
+              <p>Skills you already meet vs requirements for <span id="gap-career-name"></span></p>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="gap-table">
+              <thead>
+                <tr>
+                  <th>Skill</th>
+                  <th>Required</th>
+                  <th>Yours</th>
+                  <th class="gap-bar-cell">Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="gap-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Roadmap -->
+      <div class="tab-panel" id="tab-roadmap">
+        <div id="roadmap-loading" style="text-align:center; padding:40px; color:var(--text2);">
+          <div class="spinner"></div>
+          <p style="margin-top:12px; font-family:var(--font-mono); font-size:12px;">Generating roadmap…</p>
+        </div>
+        <div id="roadmap-content" class="hidden">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+            <span id="roadmap-career-badge" class="badge badge-green"></span>
+            <span id="roadmap-duration" class="badge badge-blue"></span>
+            <span class="badge badge-purple">Personalised to your gaps</span>
+          </div>
+          <div id="roadmap-phases"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:14px; margin-top:40px; flex-wrap:wrap;" class="fade-up-4">
+      <a href="questionnaire.html" class="btn btn-secondary">← Retake Assessment</a>
+      <a href="resume.html" class="btn btn-outline-accent">📄 Analyse Resume</a>
+    </div>
+
+  </div><!-- /results-content -->
+</div>
+
+<footer><p>◈ CAREER_AI — Results Module</p></footer>
+
+<script>
+/* ── Results Page JS ────────────────────────────────────────────────────── */
+
+const SKILL_LABELS = {
+  programming      : '🐍 Programming',
+  data_analysis    : '📊 Data Analysis',
+  machine_learning : '🤖 Machine Learning',
+  web_dev          : '🌐 Web Dev',
+  database         : '🗄️ Databases',
+  cloud            : '☁️ Cloud',
+  communication    : '💬 Communication',
+  project_management:'📋 Project Mgmt',
+  design           : '🎨 Design',
+  networking       : '🌐 Networking',
+  cybersecurity    : '🔒 Cybersecurity',
+  math             : '➗ Mathematics',
+  statistics       : '📈 Statistics',
+};
+
+let currentCareer = '';
+let missingSkills  = [];
+
+function showTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const names = ['skills','gap','roadmap'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function renderSkillBars(ratings) {
+  const wrap = document.getElementById('skill-bars');
+  wrap.innerHTML = Object.entries(ratings).map(([k, v]) => `
+    <div class="skill-bar-row">
+      <span class="skill-bar-name">${SKILL_LABELS[k] || k}</span>
+      <div class="skill-bar-outer">
+        <div class="skill-bar-inner" style="width:${v*10}%"></div>
+      </div>
+      <span class="skill-bar-val">${v}</span>
+    </div>
+  `).join('');
+}
+
+function renderTop3(top3) {
+  const grid = document.getElementById('top3-grid');
+  grid.innerHTML = top3.map((t, i) => `
+    <div class="alt-career-card ${i === 0 ? 'selected' : ''}" onclick="switchCareer('${t.career}', this)">
+      <div class="alt-career-name">${t.career}</div>
+      <div class="alt-career-prob">${t.probability}%</div>
+      <div class="alt-career-label">match probability</div>
+    </div>
+  `).join('');
+}
+
+async function switchCareer(career, cardEl) {
+  currentCareer = career;
+  // Update selected card
+  document.querySelectorAll('.alt-career-card').forEach(c => c.classList.remove('selected'));
+  if (cardEl) cardEl.classList.add('selected');
+
+  // Update top card name if it's the primary
+  // Reload gap and roadmap for new career
+  await loadGap(career);
+  await loadRoadmap(career);
+}
+
+async function loadGap(career) {
+  const gapLoading = document.getElementById('gap-loading');
+  const gapContent = document.getElementById('gap-content');
+  gapLoading.classList.remove('hidden');
+  gapContent.classList.add('hidden');
+
+  try {
+    const ratings = JSON.parse(sessionStorage.getItem('skillRatings') || '{}');
+    const resumeSkills = JSON.parse(sessionStorage.getItem('resumeSkills') || '[]');
+
+    const res = await fetch('/api/skill-gap', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ career, user_skills: ratings, resume_skills: resumeSkills }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    missingSkills = data.missing_skills || [];
+
+    document.getElementById('match-score-num').textContent = data.match_score + '%';
+    document.getElementById('match-score-num').style.color =
+      data.match_score >= 70 ? 'var(--accent)' : data.match_score >= 40 ? 'var(--warn)' : 'var(--danger)';
+    document.getElementById('gap-career-name').textContent = career;
+
+    const tbody = document.getElementById('gap-table-body');
+    tbody.innerHTML = data.gap_details.map(d => `
+      <tr>
+        <td style="font-weight:600">${d.skill}</td>
+        <td style="font-family:var(--font-mono); color:var(--text2)">${d.required_level}/10</td>
+        <td style="font-family:var(--font-mono); color:var(--text)">${d.current_level}/10</td>
+        <td class="gap-bar-cell">
+          <div class="gap-bar-wrap">
+            <div class="gap-bar-fill ${d.status === 'Present' ? 'present' : 'missing'}"
+                 style="width:${(d.current_level/10)*100}%"></div>
+          </div>
+        </td>
+        <td>
+          <span class="badge ${d.status === 'Present' ? 'badge-green' : 'badge-danger'}">
+            ${d.status}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+
+    gapLoading.classList.add('hidden');
+    gapContent.classList.remove('hidden');
+
+  } catch (err) {
+    gapLoading.innerHTML = `<p style="color:var(--danger)">⚠ ${err.message}</p>`;
+  }
+}
+
+async function loadRoadmap(career) {
+  const rmLoading = document.getElementById('roadmap-loading');
+  const rmContent = document.getElementById('roadmap-content');
+  rmLoading.classList.remove('hidden');
+  rmContent.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/roadmap', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ career, missing_skills: missingSkills }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    document.getElementById('roadmap-career-badge').textContent = career;
+    document.getElementById('roadmap-duration').textContent = '⏱ ' + data.total_duration;
+
+    const phasesWrap = document.getElementById('roadmap-phases');
+    phasesWrap.innerHTML = data.phases.map((p, i) => `
+      <div class="phase-card" data-phase="${String(i+1).padStart(2,'0')}">
+        <div class="phase-title">${p.phase}</div>
+        <div class="phase-duration">⏱ ${p.duration}</div>
+        <ul class="phase-topics">
+          ${p.topics.map(t => `
+            <li class="phase-topic ${data.highlighted.includes(t) ? 'highlight' : ''}">
+              ${data.highlighted.includes(t) ? '⚠ ' : ''}${t}
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `).join('');
+
+    rmLoading.classList.add('hidden');
+    rmContent.classList.remove('hidden');
+
+  } catch (err) {
+    rmLoading.innerHTML = `<p style="color:var(--danger)">⚠ ${err.message}</p>`;
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const pred    = sessionStorage.getItem('prediction');
+  const ratings = sessionStorage.getItem('skillRatings');
+
+  if (!pred || !ratings) {
+    document.getElementById('results-content').classList.add('hidden');
+    document.getElementById('no-data-msg').classList.remove('hidden');
+    return;
+  }
+
+  const prediction  = JSON.parse(pred);
+  const skillRatings= JSON.parse(ratings);
+
+  currentCareer = prediction.predicted_career;
+
+  // Populate top card
+  document.getElementById('top-career-name').textContent = prediction.predicted_career;
+  document.getElementById('confidence-val').textContent  = prediction.confidence + '%';
+
+  // Top 3 grid
+  renderTop3(prediction.top3);
+
+  // Skill bars
+  renderSkillBars(skillRatings);
+
+  // Load gap + roadmap for default career
+  await loadGap(currentCareer);
+  await loadRoadmap(currentCareer);
+});
+</script>
+
+</body>
+</html>
